@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Periódico Escolar</title>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f7f7f7;
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+    flex-direction: row;
+  }
+
+  /* FORMULARIO LATERAL EN ESCRITORIO */
+  #formulario {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 320px;
+    height: 100vh;
+    background: #fff;
+    border-right: 1px solid #ccc;
+    padding: 20px 16px 16px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+  }
+
+  .logos-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .logo-escuela,
+  .logo-mdld {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    user-select: none;
+    display: block;
+  }
+
+  #formulario h2 {
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: #222;
+    text-align: center;
+  }
+  #mensaje {
+    flex: 1;
+    resize: none;
+    font-size: 1rem;
+    padding: 10px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+    font-family: inherit;
+    line-height: 1.4;
+  }
+  #mensaje:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+
+  #botones-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  /* Botón Enviar (negro con borde gris) */
+  #btn-enviar-texto {
+    background: #000;
+    color: #eee;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    border: 1.5px solid #888;
+    font-family: inherit;
+    font-size: 1rem;
+  }
+  #btn-enviar-texto:hover,
+  #btn-enviar-texto:focus {
+    background: #222;
+    outline: none;
+  }
+
+  /* Botón Periódico Nuevo (rosa neón) */
+  #btn-pdf {
+    background: #ff0099;
+    color: white;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    text-align: center;
+    transition: background-color 0.3s ease;
+    border: none;
+    font-family: inherit;
+    font-size: 1rem;
+  }
+  #btn-pdf:hover,
+  #btn-pdf:focus {
+    background: #e60087;
+    outline: none;
+  }
+  #pdf-upload {
+    display: none;
+  }
+  #info {
+    font-size: 0.875rem;
+    color: #666;
+    user-select: none;
+    text-align: center;
+  }
+
+  #lista-noticias {
+    margin-left: 320px;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+    background: #fafafa;
+  }
+
+  .noticia-texto {
+    background: white;
+    border: 1px solid #bbb;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    font-size: 1rem;
+    color: #222;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.1);
+    white-space: pre-wrap;
+  }
+
+  .noticia-pdf {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .noticia-pdf .cuadro-pdf {
+    background: #ff33cc;
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #ff33ccaa;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    user-select: none;
+    font-family: monospace;
+    font-size: 0.85rem;
+    text-align: center;
+    margin-right: 12px;
+  }
+  .noticia-pdf a {
+    text-decoration: none;
+    color: #555;
+    font-size: 1rem;
+    overflow-wrap: break-word;
+  }
+  .noticia-pdf a:hover,
+  .noticia-pdf a:focus {
+    text-decoration: underline;
+  }
+
+  /* Scroll al último */
+  #lista-noticias {
+    scroll-behavior: smooth;
+  }
+  #lista-noticias:empty::before {
+    content: "No hay noticias publicadas aún.";
+    color: #999;
+    font-style: italic;
+  }
+
+  /* RESPONSIVE PARA CELULAR */
+  @media (max-width: 600px) {
+    body {
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #formulario {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: auto;
+      max-height: 280px;
+      border-right: none;
+      border-bottom: 1px solid #ccc;
+      padding: 16px 12px 12px;
+      overflow-y: auto;
+      z-index: 10;
+    }
+    #lista-noticias {
+      margin-left: 0;
+      margin-top: 280px;
+      height: calc(100vh - 280px);
+      padding: 12px 8px;
+    }
+    .logos-container {
+      justify-content: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .logo-escuela,
+    .logo-mdld {
+      width: 30px;
+      height: 30px;
+    }
+    #formulario h2 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    #mensaje {
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+    #botones-form {
+      gap: 8px;
+      justify-content: flex-start;
+      margin-bottom: 8px;
+    }
+    #btn-pdf,
+    #btn-enviar-texto {
+      font-size: 0.9rem;
+      padding: 8px 14px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="formulario" role="form" aria-label="Formulario para publicar noticia">
+  <div class="logos-container">
+    <img
+      class="logo-escuela"
+      src="https://scontent.fsal3-1.fna.fbcdn.net/v/t39.30808-6/301112424_360209616322609_3974727001698835547_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=dG7U_-pbRlwQ7kNvwFMwdB0&_nc_oc=AdmYGuG0pmx-0qDIJVjS3BPktCJLluhgSQ7X9G-G8ZLd79KXB3j399sxmmRd-WWIbww&_nc_zt=23&_nc_ht=scontent.fsal3-1.fna&_nc_gid=R2gAXRZvhVg4bcaNKIXzlA&oh=00_AfLhtgL9OGKqpmNP5nVRnnjB106Tk-6BE-ZWaUAqv9KwrQ&oe=6839C7A4"
+      alt="Logo de la escuela"
+    />
+    <img
+      class="logo-mdld"
+      src="https://fv5-2.files.fm/thumb_show.php?i=n2ytfe6zjs&view&v=1&PHPSESSID=91d6655d6f3d6444d45043c0f38b90b6e2c243be"
+      alt="Logo de MDLD Studios"
+    />
+  </div>
+  <h2>Publicar noticia</h2>
+  <textarea
+    id="mensaje"
+    placeholder="Escribe tu noticia aquí..."
+    aria-label="Área para escribir noticia"
+    maxlength="1000"
+  ></textarea>
+  <div id="botones-form">
+    <button id="btn-enviar-texto" type="button" aria-label="Enviar texto de noticia">Enviar</button>
+    <label id="btn-pdf" for="pdf-upload" tabindex="0" aria-label="Seleccionar archivo PDF para subir noticia">Periódico Nuevo</label>
+  </div>
+  <input
+    type="file"
+    id="pdf-upload"
+    accept="application/pdf"
+    aria-hidden="true"
+    tabindex="-1"
+  />
+  <div id="info" aria-live="polite"></div>
+</div>
+
+<div id="lista-noticias" aria-live="polite" aria-relevant="additions" tabindex="0">
+  <!-- Noticias -->
+</div>
+
+<script>
+  const mensaje = document.getElementById('mensaje');
+  const btnEnviarTexto = document.getElementById('btn-enviar-texto');
+  const pdfUpload = document.getElementById('pdf-upload');
+  const listaNoticias = document.getElementById('lista-noticias');
+
+  function agregarNoticiaTexto(texto) {
+    if (!texto.trim()) return;
+
+    const div = document.createElement('div');
+    div.classList.add('noticia-texto');
+    div.textContent = texto.trim();
+
+    listaNoticias.appendChild(div);
+    listaNoticias.scrollTop = listaNoticias.scrollHeight;
+    mensaje.value = '';
+    mensaje.focus();
+  }
+
+  function agregarNoticiaPDF(file) {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+
+    const div = document.createElement('div');
+    div.classList.add('noticia-pdf');
+
+    const cuadro = document.createElement('div');
+    cuadro.classList.add('cuadro-pdf');
+    cuadro.textContent = 'PDF';
+
+    const enlace = document.createElement('a');
+    enlace.href = url;
+    enlace.target = '_blank';
+    enlace.rel = 'noopener noreferrer';
+    enlace.textContent = file.name;
+
+    div.appendChild(cuadro);
+    div.appendChild(enlace);
+
+    listaNoticias.appendChild(div);
+    listaNoticias.scrollTop = listaNoticias.scrollHeight;
+
+    // Liberar URL cuando no se use más
+    enlace.addEventListener('click', () => {
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    });
+  }
+
+  btnEnviarTexto.addEventListener('click', () => {
+    agregarNoticiaTexto(mensaje.value);
+  });
+
+  mensaje.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      agregarNoticiaTexto(mensaje.value);
+    }
+  });
+
+  pdfUpload.addEventListener('change', () => {
+    if (pdfUpload.files.length > 0) {
+      agregarNoticiaPDF(pdfUpload.files[0]);
+      pdfUpload.value = '';
+    }
+  });
+</script>
+</body>
+</html>
